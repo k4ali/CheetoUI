@@ -1,0 +1,1 @@
+(()=>{"use strict";setTick((()=>{(class{static MenuConfig={structPosition:{x:.2,y:.2},globalSize:{width:.35},header:{height:.1}};static drawHeader(){const t=this.MenuConfig;DrawRect(t.structPosition.x,t.structPosition.y,t.globalSize.width,t.header.height,255,255,255,255)}}).drawHeader()}))})();
