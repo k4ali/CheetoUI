@@ -51,7 +51,7 @@ class CheetoUI
         }
     };
 
-    private drawHeader(): void
+    public drawHeader(): void
     {
         const GlobalConfig = CheetoUI.MenuConfig;
         let headerColor = (this.menu.options?.headerColor ?? GlobalConfig.header.color);
@@ -60,7 +60,11 @@ class CheetoUI
     }
 }
 
-let newMenu: I
-setTick(() => {
+let newMenu: CheetoUI = new CheetoUI({
+    title: "Cheeto Menu",
+    subtitle: "Subtitle"
+})
 
+setTick(() => {
+    newMenu.drawHeader();
 })
