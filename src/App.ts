@@ -17,12 +17,12 @@ interface ICheetoUI
 
 interface IMenuStates
 {
-    btnIndex: number = 0;
+    btnIndex: number;
 }
 
 class CheetoUI
 {
-    private menu: IActualMenu;
+    private menu: ICheetoUI;
     private menuStates: IMenuStates;
 
     public static defaultStates: IMenuStates = {
@@ -33,7 +33,7 @@ class CheetoUI
     {
         this.menu = menuStruct;
         this.menuStates = CheetoUI.defaultStates;
-    },
+    }
 
     public static MenuConfig = {
         structPosition: {
