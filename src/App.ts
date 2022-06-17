@@ -1,8 +1,10 @@
+type Color = [number, number, number, number];
+
 interface IMenuOptions
 {
     enableHeader?: boolean;
     enableGlare?: boolean;
-    headerColor?: number[];
+    headerColor?: Color;
 }
 
 interface ICheetoUI
