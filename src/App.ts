@@ -15,21 +15,27 @@ interface ICheetoUI
     options?: IMenuOptions;
 }
 
-interface IActualMenu extends ICheetoUI
+interface IMenuStates
 {
     btnIndex: number = 0;
 }
 
 class CheetoUI
 {
-    menu: ICheetoUI;
+    private menu: IActualMenu;
+    private menuStates: IMenuStates;
+
+    public static defaultStates: IMenuStates = {
+        btnIndex: 0,
+    }
 
     constructor(menuStruct: ICheetoUI)
     {
         this.menu = menuStruct;
+        this.menuStates = CheetoUI.defaultStates;
     },
 
-    private static MenuConfig = {
+    public static MenuConfig = {
         structPosition: {
             x: 0.2,
             y: 0.2
@@ -40,17 +46,21 @@ class CheetoUI
         },
 
         header: {
-            height: 0.12
+            height: 0.12,
+            color: [27, 91, 189, 245]
         }
     };
 
-    public static drawHeader(): void
+    private drawHeader(): void
     {
-        const GlobalConfig = this.MenuConfig;
-        DrawRect(GlobalConfig.structPosition.x, GlobalConfig.structPosition.y, GlobalConfig.globalSize.width, GlobalConfig.header.height, 255, 255, 255, 255);
+        const GlobalConfig = CheetoUI.MenuConfig;
+        let headerColor = (this.menu.options?.headerColor ?? GlobalConfig.header.color);
+
+        DrawRect(GlobalConfig.structPosition.x, GlobalConfig.structPosition.y, GlobalConfig.globalSize.width, GlobalConfig.header.height, headerColor[0], headerColor[1], headerColor[2], headerColor[3]);
     }
 }
 
+let newMenu: I
 setTick(() => {
-    CheetoUI.drawHeader();
+
 })
