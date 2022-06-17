@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "esModuleInterop": true,
+    "moduleResolution": "Node",
+    "forceConsistentCasingInFileNames": true,
+    "alwaysStrict": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "types": ["@citizenfx/client", "@types/node"]
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "**/*.d.ts"]
+}
