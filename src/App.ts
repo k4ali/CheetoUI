@@ -6,15 +6,8 @@ type Position = {
     z?: number;
 };
 
-interface ISoundArray
-{
-    [index: string]: [string, string, boolean];
-}
-
-interface IMenuControls
-{
-    [index: string]: number;
-}
+interface ISoundArray { [index: string]: [string, string, boolean] };
+interface IMenuControls { [index: string]: number };
 
 interface IMenuButtons
 {
@@ -63,10 +56,7 @@ function PushSound(soundName: string): void
     PlaySoundFrontend(-1, sound[1], sound[0], sound[2]);
 }
 
-function GetPlayerKeyState(key: string): boolean
-{
-    return IsControlJustPressed(0, CheetoUI.MenuControls[key]);
-}
+function GetPlayerKeyState(key: string): boolean { return IsControlJustPressed(0, CheetoUI.MenuControls[key]) };
 
 class CheetoUI
 {
