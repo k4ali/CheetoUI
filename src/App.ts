@@ -1,5 +1,5 @@
 type Color = [number, number, number, number];
-type Callback = (cbData: any) => void;
+type Callback = (cbData?: any) => void;
 type Position = {
     x: number,
     y: number
@@ -19,6 +19,7 @@ interface IMenuControls
 interface IMenuButtons
 {
     text: string;
+    onPressed?: Callback;
 }
 
 interface IMenuOptions
@@ -141,6 +142,7 @@ class CheetoUI
     public static MenuControls: IMenuControls = {
         navigateUp: 300,
         navigateDown: 299,
+        select: 215,
         close: 202
     }
     
@@ -182,6 +184,12 @@ class CheetoUI
         else if (GetPlayerKeyState('navigateDown'))
         {
             (this.menu.buttons![this.menuStates.btnIndex + 1] ? ++this.menuStates.btnIndex : this.menuStates.btnIndex = 0);
+        }
+        else if (GetPlayerKeyState('select'))
+        {
+            const selectedBtn: IMenuButtons = this.menu.buttons![this.menuStates.btnIndex];
+            if (!selectedBtn.onPressed) return;
+            selectedBtn.onPressed();
         }
         else if (GetPlayerKeyState('close'))
         {
@@ -273,6 +281,9 @@ RegisterCommand('cheeto', () => {
     let btns: IMenuButtons[] = [
         {
             text: "testo cheeto",
+            onPressed: () => {
+                console.log('test cheeto enter pressed')
+            }
         },
         {
             text: 'eta vzsio'
