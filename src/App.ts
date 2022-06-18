@@ -68,15 +68,16 @@ function GetPlayerKeyState(key: string): boolean
     return IsControlJustPressed(0, CheetoUI.MenuControls[key]);
 }
 
-let glareHandle: any;
-let menuTick: any;
 class CheetoUI
 {
     public menu: ICheetoUI;
     private menuStates: IMenuStates;
 
     public static isMenuOpened: boolean = false;
+    public static menuTick: any;
+
     private isGlareLoaded: boolean = false;
+    private glareHandle: any;
 
     public static defaultStates: IMenuStates = {
         btnIndex: 0,
@@ -153,8 +154,8 @@ class CheetoUI
         this.isMenuOpened = true;
 
         if (GlobalConfig.enableSounds) PushSound('open');
-        menuTick = setTick(() => {
-            if (!this.isMenuOpened) clearTick(menuTick);
+        this.menuTick = setTick(() => {
+            if (!this.isMenuOpened) clearTick(this.menuTick);
 
             instance.drawMenu();
             instance.menu.menuHandler((btnsData?: IMenuButtons[]) => {
@@ -267,10 +268,10 @@ class CheetoUI
         {
             if (!this.isGlareLoaded)
             {
-                glareHandle = RequestScaleformMovie(GlobalConfig.glareScaleformName);
-                if (HasScaleformMovieLoaded(glareHandle)) this.isGlareLoaded = true;
+                this.glareHandle = RequestScaleformMovie(GlobalConfig.glareScaleformName);
+                if (HasScaleformMovieLoaded(this.glareHandle)) this.isGlareLoaded = true;
             }
-            else DrawScaleformMovie(glareHandle, (GlobalConfig.structPosition.x * 3.118), (GlobalConfig.structPosition.y * 4.182), (GlobalConfig.globalWidth * 4.5), (GlobalConfig.header.height * 11.15), 255, 255, 255, 255, 1);
+            else DrawScaleformMovie(this.glareHandle, (GlobalConfig.structPosition.x * 3.118), (GlobalConfig.structPosition.y * 4.182), (GlobalConfig.globalWidth * 4.5), (GlobalConfig.header.height * 11.15), 255, 255, 255, 255, 1);
         }
     }
 }
