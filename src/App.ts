@@ -1,5 +1,10 @@
 type Color = [number, number, number, number];
 type Callback = (cbData: any) => void;
+type Position = {
+    x: number,
+    y: number
+    z?: number;
+};
 
 interface IMenuOptions
 {
@@ -23,6 +28,16 @@ interface IMenuStates
     btnIndex: number;
 }
 
+function PushText(textString: string, fontIndex: number, scale: number, color: Color, position: Position): void
+{
+    SetTextFont(fontIndex)
+    SetTextScale(0.0, scale)
+    SetTextColour(color[0], color[1], color[2], color[3])
+    SetTextEntry("STRING")
+    AddTextComponentString(textString || '')
+    DrawText(position.x, position.y) 
+};
+
 let glareHandle: any;
 let menuTick: any;
 class CheetoUI
@@ -45,6 +60,7 @@ class CheetoUI
 
     public static MenuConfig = {
         glareScaleformName: "MP_MENU_GLARE",
+        globalFontIndex: 0,
         structPosition: {
             x: 0.15,
             y: 0.135
@@ -91,7 +107,7 @@ class CheetoUI
 
     private refreshMenu(value: any): void
     {
-        
+
     }
 
     private drawMenu(): void
@@ -109,12 +125,10 @@ class CheetoUI
 
     private drawTitle(): void
     {
-        SetTextFont(CheetoUI.MenuConfig.header.title.fontIndex)
-        SetTextScale(0.0, CheetoUI.MenuConfig.header.title.size)
-        SetTextColour(255, 255, 255, 255)
-        SetTextEntry("STRING")
-        AddTextComponentString(this.menu.title)
-        DrawText(CheetoUI.MenuConfig.structPosition.x / 2.5, CheetoUI.MenuConfig.structPosition.y / (CheetoUI.MenuConfig.header.height * 12.3)) 
+        PushText(this.menu.title, CheetoUI.MenuConfig.header.title.fontIndex, CheetoUI.MenuConfig.header.title.size, [255, 255, 255, 255], { 
+            x: CheetoUI.MenuConfig.structPosition.x / 2.5,
+            y: CheetoUI.MenuConfig.structPosition.y / (CheetoUI.MenuConfig.header.height * 12.3)
+        })
     }
 
     private drawHeader(): void
@@ -146,7 +160,7 @@ class CheetoUI
 // debug part
 RegisterCommand('cheeto', () => {
     let valuetest: string = 'gryazne tantse';
-    let menu: CheetoUI = CheetoUI.openMenu('Cheeto Menu', 'Subtitle!', true, { enableGlare: true }, (cb: Callback) => {
+    let menu: CheetoUI = CheetoUI.openMenu('Cheeto Menu', 'Subtitle!', true, { enableGlare: false }, (cb: Callback) => {
         cb(valuetest);
     });
 }, false)
