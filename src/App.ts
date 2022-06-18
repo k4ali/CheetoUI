@@ -11,6 +11,11 @@ interface ISoundArray
     [index: string]: [string, string, boolean];
 }
 
+interface IMenuControls
+{
+    [index: string]: number;
+}
+
 interface IMenuButtons
 {
     name: string;
@@ -20,6 +25,7 @@ interface IMenuOptions
 {
     enableHeader?: boolean;
     enableGlare?: boolean;
+    enablePageCounter?: boolean;
     headerColor?: Color;
 }
 
@@ -54,6 +60,11 @@ function PushSound(soundName: string): void
     const sound = CheetoUI.MenuSounds[soundName];
     if (!sound) return;
     PlaySoundFrontend(-1, sound[1], sound[0], sound[2]);
+}
+
+function GetPlayerKeyState(key: string): boolean
+{
+    return IsControlJustReleased(0, CheetoUI.MenuControls[key]);
 }
 
 let glareHandle: any;
@@ -125,6 +136,11 @@ class CheetoUI
     public static MenuSounds: ISoundArray = {
         open: ["GTAO_FM_Events_Soundset", "OOB_Start", false],
     }
+
+    public static MenuControls: IMenuControls = {
+        navigateUp: 300,
+        navigateDown: 299,
+    }
     
     public static openMenu(title: string, subtitle: string, closable?: boolean, options?: IMenuOptions, menuHandler?: Callback): void
     {
@@ -155,6 +171,19 @@ class CheetoUI
         }
     }
 
+    private setMenuControlsHandler(): void
+    {
+        if (GetPlayerKeyState('navigateUp'))
+        {
+
+            if (this.menu.buttons![this.menuStates.btnIndex - 1]) this.menuStates.btnIndex--;
+        }
+        else if (GetPlayerKeyState('navigateDown'))
+        {
+            if (this.menu.buttons![this.menuStates.btnIndex + 1]) ++this.menuStates.btnIndex;
+        }
+    }
+
     private drawButton(btnData: IMenuButtons, btnIndex: number): void
     {
         const GlobalConfig = CheetoUI.MenuConfig;
@@ -170,8 +199,10 @@ class CheetoUI
 
     private drawMenu(): void
     {
-        this.drawHeader();
+        const HeaderEnabled: boolean = (this.menu.options?.enableHeader ?? true);
+        if (HeaderEnabled) this.drawHeader();
         this.drawSubtitle();
+        this.setMenuControlsHandler();
     }
 
     private drawSubtitle(): void
