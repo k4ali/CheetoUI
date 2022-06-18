@@ -28,7 +28,7 @@ interface IMenuStates
     btnIndex: number;
 }
 
-function PushText(textString: string, fontIndex: number, scale: number, color: Color, position: Position): void
+function PushText(textString: string, fontIndex: number, scale: number, color: (Color | number[]), position: Position): void
 {
     SetTextFont(fontIndex)
     SetTextScale(0.0, scale)
@@ -60,7 +60,14 @@ class CheetoUI
 
     public static MenuConfig = {
         glareScaleformName: "MP_MENU_GLARE",
+
         globalFontIndex: 0,
+        globalFontSize: 0.25,
+        globalFontColor: {
+            inactive: [245, 245, 245, 235],
+            active: [10, 10, 10, 250]
+        },
+
         structPosition: {
             x: 0.15,
             y: 0.135
@@ -90,8 +97,8 @@ class CheetoUI
     public static openMenu(title: string, subtitle: string, closable?: boolean, options?: IMenuOptions, menuHandler?: Callback): CheetoUI
     {
         let instance: CheetoUI = new CheetoUI({ title, subtitle, closable, options, menuHandler });
-
         this.isMenuOpened = true;
+
         menuTick = setTick(() => {
             if (!this.isMenuOpened) clearTick(menuTick);
 
@@ -100,7 +107,6 @@ class CheetoUI
                 instance.refreshMenu(data)
             })
         })
-        
         
         return instance;
     }
@@ -120,7 +126,19 @@ class CheetoUI
     {
         const GlobalConfig = CheetoUI.MenuConfig;
         const rectColor: number[] = GlobalConfig.subtitle.rect.color;
-        DrawRect(GlobalConfig.structPosition.x, (GlobalConfig.structPosition.y + 0.061), GlobalConfig.globalSize.width, GlobalConfig.subtitle.rect.height, rectColor[0], rectColor[1], rectColor[2], rectColor[3]);
+        const subtitleStructPosition: Position = {
+            x: GlobalConfig.structPosition.x,
+            y: (GlobalConfig.structPosition.y + 0.061)
+        }
+        
+        DrawRect(subtitleStructPosition.x, subtitleStructPosition.y, GlobalConfig.globalSize.width, GlobalConfig.subtitle.rect.height, rectColor[0], rectColor[1], rectColor[2], rectColor[3]);
+        if (this.menu.subtitle.length > 0)
+        {
+            PushText(this.menu.subtitle.toUpperCase(), GlobalConfig.globalFontIndex, GlobalConfig.globalFontSize, GlobalConfig.globalFontColor.inactive, { 
+                x: (subtitleStructPosition.x - 0.1),
+                y: (subtitleStructPosition.y - 0.010)
+            })
+        }
     }
 
     private drawTitle(): void
