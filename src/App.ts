@@ -6,6 +6,16 @@ type Position = {
     z?: number;
 };
 
+interface ISoundArray
+{
+    [index: string]: [string, string, boolean];
+}
+
+interface IMenuButtons
+{
+    name: string;
+}
+
 interface IMenuOptions
 {
     enableHeader?: boolean;
@@ -21,6 +31,7 @@ interface ICheetoUI
     options?: IMenuOptions;
 
     menuHandler?: any;
+    buttons?: IMenuButtons[];
 }
 
 interface IMenuStates
@@ -37,6 +48,13 @@ function PushText(textString: string, fontIndex: number, scale: number, color: (
     AddTextComponentString(textString || '')
     DrawText(position.x, position.y) 
 };
+
+function PushSound(soundName: string): void
+{
+    const sound = CheetoUI.MenuSounds[soundName];
+    if (!sound) return;
+    PlaySoundFrontend(-1, sound[1], sound[0], sound[2]);
+}
 
 let glareHandle: any;
 let menuTick: any;
@@ -56,10 +74,12 @@ class CheetoUI
     {
         this.menu = menuStruct;
         this.menuStates = CheetoUI.defaultStates;
+        this.menu.buttons = [];
     }
 
     public static MenuConfig = {
         glareScaleformName: "MP_MENU_GLARE",
+        enableSounds: false,
 
         globalFontIndex: 0,
         globalFontSize: 0.25,
@@ -89,31 +109,63 @@ class CheetoUI
                 color: [26, 26, 26, 245],
                 height: 0.025,
             }
+        },
+
+        button: {
+            rect: {
+                height: 0.0295,
+                color: {
+                    inactive: [26, 26, 26, 200],
+                    active: [250, 250, 250, 245]
+                }
+            }
         }
     };
 
-    public static openMenu(title: string, subtitle: string, closable?: boolean, options?: IMenuOptions, menuHandler?: Callback): CheetoUI
+    public static MenuSounds: ISoundArray = {
+        open: ["GTAO_FM_Events_Soundset", "OOB_Start", false],
+    }
+    
+    public static openMenu(title: string, subtitle: string, closable?: boolean, options?: IMenuOptions, menuHandler?: Callback): void
     {
+        const GlobalConfig = this.MenuConfig;
         let instance: CheetoUI = new CheetoUI({ title, subtitle, closable, options, menuHandler });
         this.isMenuOpened = true;
 
+        if (GlobalConfig.enableSounds) PushSound('open');
         menuTick = setTick(() => {
             if (!this.isMenuOpened) clearTick(menuTick);
 
             instance.drawMenu();
-            instance.menu.menuHandler((data: any) => {
-                instance.refreshMenu(data)
+            instance.menu.menuHandler((btnsData?: IMenuButtons[]) => {
+                if (btnsData) instance.refreshMenu(btnsData);
             })
         })
-        
-        return instance;
     }
 
     public static closeMenu(): void { this.isMenuOpened = false };
 
-    private refreshMenu(value: any): void
+    private refreshMenu(btns: IMenuButtons[]): void
     {
+        if (!btns || (btns.length < 1)) return;
+        for (let i = 0; i < btns.length; i++)
+        {
+            if (!this.menu.buttons![i]) this.menu.buttons![i] = btns[i];
+            this.drawButton({ name: this.menu.buttons![i].name }, i);
+        }
+    }
 
+    private drawButton(btnData: IMenuButtons, btnIndex: number): void
+    {
+        const GlobalConfig = CheetoUI.MenuConfig;
+        let btnColor: number[] = ((btnIndex === this.menuStates.btnIndex) ? GlobalConfig.button.rect.color.active : GlobalConfig.button.rect.color.inactive);
+        let btnStructPosition: Position = {
+            x: GlobalConfig.structPosition.x,
+            y: (GlobalConfig.structPosition.y + 0.0895)
+        }
+
+        if (btnIndex > 0) btnStructPosition.y += ((btnStructPosition.y / 7.6) * btnIndex);
+        DrawRect(btnStructPosition.x, btnStructPosition.y, GlobalConfig.globalWidth, GlobalConfig.button.rect.height, btnColor[0], btnColor[1], btnColor[2], btnColor[3]);
     }
 
     private drawMenu(): void
@@ -172,8 +224,23 @@ class CheetoUI
 // debug part
 RegisterCommand('cheeto', () => {
     let valuetest: string = 'gryazne tantse';
-    let menu: CheetoUI = CheetoUI.openMenu('Cheeto Menu', 'Subtitle!', true, { enableGlare: false }, (cb: Callback) => {
-        cb(valuetest);
+    let btns: IMenuButtons[] = [
+        {
+            name: "testo cheeto",
+        },
+        {
+            name: 'eta vzsio'
+        },
+        {
+            name: 'jobani y urod'
+        },
+        {
+            name: 'pidaras'
+        }
+    ]
+
+    CheetoUI.openMenu('Cheeto Menu', 'Subtitle!', true, { enableGlare: false }, (cb: Callback) => {
+        cb(btns);
     });
 }, false)
 
