@@ -73,9 +73,7 @@ class CheetoUI
             y: 0.135
         },
 
-        globalSize: {
-            width: 0.210
-        },
+        globalWidth: 0.210,
 
         header: {
             height: 0.095,
@@ -111,6 +109,8 @@ class CheetoUI
         return instance;
     }
 
+    public static closeMenu(): void { this.isMenuOpened = false };
+
     private refreshMenu(value: any): void
     {
 
@@ -131,7 +131,7 @@ class CheetoUI
             y: (GlobalConfig.structPosition.y + 0.061)
         }
         
-        DrawRect(subtitleStructPosition.x, subtitleStructPosition.y, GlobalConfig.globalSize.width, GlobalConfig.subtitle.rect.height, rectColor[0], rectColor[1], rectColor[2], rectColor[3]);
+        DrawRect(subtitleStructPosition.x, subtitleStructPosition.y, GlobalConfig.globalWidth, GlobalConfig.subtitle.rect.height, rectColor[0], rectColor[1], rectColor[2], rectColor[3]);
         if (this.menu.subtitle.length > 0)
         {
             PushText(this.menu.subtitle.toUpperCase(), GlobalConfig.globalFontIndex, GlobalConfig.globalFontSize, GlobalConfig.globalFontColor.inactive, { 
@@ -145,7 +145,7 @@ class CheetoUI
     {
         PushText(this.menu.title, CheetoUI.MenuConfig.header.title.fontIndex, CheetoUI.MenuConfig.header.title.size, [255, 255, 255, 255], { 
             x: CheetoUI.MenuConfig.structPosition.x / 2.5,
-            y: CheetoUI.MenuConfig.structPosition.y / (CheetoUI.MenuConfig.header.height * 12.3)
+            y: CheetoUI.MenuConfig.structPosition.y / (CheetoUI.MenuConfig.header.height * 12.05)
         })
     }
 
@@ -154,11 +154,8 @@ class CheetoUI
         const GlobalConfig = CheetoUI.MenuConfig;
         let headerColor = (this.menu.options?.headerColor ?? GlobalConfig.header.color);
 
-        DrawRect(GlobalConfig.structPosition.x, GlobalConfig.structPosition.y, GlobalConfig.globalSize.width, GlobalConfig.header.height, headerColor[0], headerColor[1], headerColor[2], headerColor[3]);
-        if (this.menu.title.length > 0)
-        {
-            this.drawTitle();
-        }
+        DrawRect(GlobalConfig.structPosition.x, GlobalConfig.structPosition.y, GlobalConfig.globalWidth, GlobalConfig.header.height, headerColor[0], headerColor[1], headerColor[2], headerColor[3]);
+        if (this.menu.title.length > 0) this.drawTitle();
 
         if (this.menu.options?.enableGlare)
         {
@@ -167,10 +164,7 @@ class CheetoUI
                 glareHandle = RequestScaleformMovie(GlobalConfig.glareScaleformName);
                 if (HasScaleformMovieLoaded(glareHandle)) this.isGlareLoaded = true;
             }
-            else
-            {
-                DrawScaleformMovie(glareHandle, (GlobalConfig.structPosition.x * 3.118), (GlobalConfig.structPosition.y * 4.182), (GlobalConfig.globalSize.width * 4.5), (GlobalConfig.header.height * 11.15), 255, 255, 255, 255, 1);
-            }
+            else DrawScaleformMovie(glareHandle, (GlobalConfig.structPosition.x * 3.118), (GlobalConfig.structPosition.y * 4.182), (GlobalConfig.globalWidth * 4.5), (GlobalConfig.header.height * 11.15), 255, 255, 255, 255, 1);
         }
     }
 }
@@ -181,4 +175,8 @@ RegisterCommand('cheeto', () => {
     let menu: CheetoUI = CheetoUI.openMenu('Cheeto Menu', 'Subtitle!', true, { enableGlare: false }, (cb: Callback) => {
         cb(valuetest);
     });
+}, false)
+
+RegisterCommand('close', () => {
+    CheetoUI.closeMenu();
 }, false)
