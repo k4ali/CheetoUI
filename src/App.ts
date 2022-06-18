@@ -18,7 +18,7 @@ interface IMenuControls
 
 interface IMenuButtons
 {
-    name: string;
+    text: string;
 }
 
 interface IMenuOptions
@@ -64,7 +64,7 @@ function PushSound(soundName: string): void
 
 function GetPlayerKeyState(key: string): boolean
 {
-    return IsControlJustReleased(0, CheetoUI.MenuControls[key]);
+    return IsControlJustPressed(0, CheetoUI.MenuControls[key]);
 }
 
 let glareHandle: any;
@@ -93,7 +93,6 @@ class CheetoUI
         enableSounds: false,
 
         globalFontIndex: 0,
-        globalFontSize: 0.25,
         globalFontColor: {
             inactive: [245, 245, 245, 235],
             active: [10, 10, 10, 250]
@@ -116,6 +115,7 @@ class CheetoUI
         },
 
         subtitle: {
+            textSize: 0.25,
             rect: {
                 color: [26, 26, 26, 245],
                 height: 0.025,
@@ -123,6 +123,7 @@ class CheetoUI
         },
 
         button: {
+            textSize: 0.265,
             rect: {
                 height: 0.0295,
                 color: {
@@ -140,6 +141,7 @@ class CheetoUI
     public static MenuControls: IMenuControls = {
         navigateUp: 300,
         navigateDown: 299,
+        close: 202
     }
     
     public static openMenu(title: string, subtitle: string, closable?: boolean, options?: IMenuOptions, menuHandler?: Callback): void
@@ -167,7 +169,7 @@ class CheetoUI
         for (let i = 0; i < btns.length; i++)
         {
             if (!this.menu.buttons![i]) this.menu.buttons![i] = btns[i];
-            this.drawButton({ name: this.menu.buttons![i].name }, i);
+            this.drawButton({ text: this.menu.buttons![i].text }, i);
         }
     }
 
@@ -175,19 +177,23 @@ class CheetoUI
     {
         if (GetPlayerKeyState('navigateUp'))
         {
-
-            if (this.menu.buttons![this.menuStates.btnIndex - 1]) this.menuStates.btnIndex--;
+            (this.menu.buttons![this.menuStates.btnIndex - 1] ? this.menuStates.btnIndex-- : this.menuStates.btnIndex = (this.menu.buttons?.length! - 1));
         }
         else if (GetPlayerKeyState('navigateDown'))
         {
-            if (this.menu.buttons![this.menuStates.btnIndex + 1]) ++this.menuStates.btnIndex;
+            (this.menu.buttons![this.menuStates.btnIndex + 1] ? ++this.menuStates.btnIndex : this.menuStates.btnIndex = 0);
+        }
+        else if (GetPlayerKeyState('close'))
+        {
+            CheetoUI.closeMenu();
         }
     }
 
     private drawButton(btnData: IMenuButtons, btnIndex: number): void
     {
         const GlobalConfig = CheetoUI.MenuConfig;
-        let btnColor: number[] = ((btnIndex === this.menuStates.btnIndex) ? GlobalConfig.button.rect.color.active : GlobalConfig.button.rect.color.inactive);
+        let isBtnActive: boolean = (btnIndex === this.menuStates.btnIndex);
+        let btnColor: number[] = (isBtnActive ? GlobalConfig.button.rect.color.active : GlobalConfig.button.rect.color.inactive);
         let btnStructPosition: Position = {
             x: GlobalConfig.structPosition.x,
             y: (GlobalConfig.structPosition.y + 0.0895)
@@ -195,6 +201,15 @@ class CheetoUI
 
         if (btnIndex > 0) btnStructPosition.y += ((btnStructPosition.y / 7.6) * btnIndex);
         DrawRect(btnStructPosition.x, btnStructPosition.y, GlobalConfig.globalWidth, GlobalConfig.button.rect.height, btnColor[0], btnColor[1], btnColor[2], btnColor[3]);
+        
+        let btnTextColor: number[] = (isBtnActive ? GlobalConfig.globalFontColor.active : GlobalConfig.globalFontColor.inactive);
+        if (btnData.text.length > 0)
+        {
+            PushText(btnData.text, GlobalConfig.globalFontIndex, GlobalConfig.button.textSize, btnTextColor, {
+                x: (btnStructPosition.x - 0.10),
+                y: (btnStructPosition.y - 0.0115)
+            })
+        }
     }
 
     private drawMenu(): void
@@ -217,7 +232,7 @@ class CheetoUI
         DrawRect(subtitleStructPosition.x, subtitleStructPosition.y, GlobalConfig.globalWidth, GlobalConfig.subtitle.rect.height, rectColor[0], rectColor[1], rectColor[2], rectColor[3]);
         if (this.menu.subtitle.length > 0)
         {
-            PushText(this.menu.subtitle.toUpperCase(), GlobalConfig.globalFontIndex, GlobalConfig.globalFontSize, GlobalConfig.globalFontColor.inactive, { 
+            PushText(this.menu.subtitle.toUpperCase(), GlobalConfig.globalFontIndex, GlobalConfig.subtitle.textSize, GlobalConfig.globalFontColor.inactive, { 
                 x: (subtitleStructPosition.x - 0.1),
                 y: (subtitleStructPosition.y - 0.010)
             })
@@ -257,24 +272,20 @@ RegisterCommand('cheeto', () => {
     let valuetest: string = 'gryazne tantse';
     let btns: IMenuButtons[] = [
         {
-            name: "testo cheeto",
+            text: "testo cheeto",
         },
         {
-            name: 'eta vzsio'
+            text: 'eta vzsio'
         },
         {
-            name: 'jobani y urod'
+            text: 'jobani y urod'
         },
         {
-            name: 'pidaras'
+            text: 'pidaras'
         }
     ]
 
     CheetoUI.openMenu('Cheeto Menu', 'Subtitle!', true, { enableGlare: false }, (cb: Callback) => {
         cb(btns);
     });
-}, false)
-
-RegisterCommand('close', () => {
-    CheetoUI.closeMenu();
 }, false)
