@@ -1,4 +1,5 @@
 type Color = [number, number, number, number];
+type Callback = (cbData: any) => void;
 
 interface IMenuOptions
 {
@@ -13,6 +14,8 @@ interface ICheetoUI
     subtitle: string;
     closable?: boolean;
     options?: IMenuOptions;
+
+    menuHandler?: any;
 }
 
 interface IMenuStates
@@ -20,16 +23,14 @@ interface IMenuStates
     btnIndex: number;
 }
 
-function Delay(milliseconds: number): void
-{
-    new Promise((resolve: any) => setTimeout(resolve, milliseconds));
-}
-
 let glareHandle: any;
+let menuTick: any;
 class CheetoUI
 {
-    private menu: ICheetoUI;
+    public menu: ICheetoUI;
     private menuStates: IMenuStates;
+
+    public static isMenuOpened: boolean = false;
     private isGlareLoaded: boolean = false;
 
     public static defaultStates: IMenuStates = {
@@ -60,8 +61,51 @@ class CheetoUI
                 fontIndex: 1,
                 size: 0.70
             }
+        },
+
+        subtitle: {
+            rect: {
+                color: [26, 26, 26, 245],
+                height: 0.025,
+            }
         }
     };
+
+    public static openMenu(title: string, subtitle: string, closable?: boolean, options?: IMenuOptions, menuHandler?: Callback): CheetoUI
+    {
+        let instance: CheetoUI = new CheetoUI({ title, subtitle, closable, options, menuHandler });
+
+        this.isMenuOpened = true;
+        menuTick = setTick(() => {
+            if (!this.isMenuOpened) clearTick(menuTick);
+
+            instance.drawMenu();
+            instance.menu.menuHandler((data: any) => {
+                instance.refreshMenu(data)
+            })
+        })
+        
+        
+        return instance;
+    }
+
+    private refreshMenu(value: any): void
+    {
+        
+    }
+
+    private drawMenu(): void
+    {
+        this.drawHeader();
+        this.drawSubtitle();
+    }
+
+    private drawSubtitle(): void
+    {
+        const GlobalConfig = CheetoUI.MenuConfig;
+        const rectColor: number[] = GlobalConfig.subtitle.rect.color;
+        DrawRect(GlobalConfig.structPosition.x, (GlobalConfig.structPosition.y + 0.061), GlobalConfig.globalSize.width, GlobalConfig.subtitle.rect.height, rectColor[0], rectColor[1], rectColor[2], rectColor[3]);
+    }
 
     private drawTitle(): void
     {
@@ -70,10 +114,10 @@ class CheetoUI
         SetTextColour(255, 255, 255, 255)
         SetTextEntry("STRING")
         AddTextComponentString(this.menu.title)
-        DrawText(CheetoUI.MenuConfig.structPosition.x / 2.5, CheetoUI.MenuConfig.structPosition.y / (CheetoUI.MenuConfig.header.height * 12.5)) 
+        DrawText(CheetoUI.MenuConfig.structPosition.x / 2.5, CheetoUI.MenuConfig.structPosition.y / (CheetoUI.MenuConfig.header.height * 12.3)) 
     }
 
-    public drawHeader(): void
+    private drawHeader(): void
     {
         const GlobalConfig = CheetoUI.MenuConfig;
         let headerColor = (this.menu.options?.headerColor ?? GlobalConfig.header.color);
@@ -99,14 +143,10 @@ class CheetoUI
     }
 }
 
-let newMenu: CheetoUI = new CheetoUI({
-    title: "Cheeto Menu",
-    subtitle: "Subtitle",
-    options: {
-        enableGlare: true,
-    }
-})
-
-setTick(() => {
-    newMenu.drawHeader();
-})
+// debug part
+RegisterCommand('cheeto', () => {
+    let valuetest: string = 'gryazne tantse';
+    let menu: CheetoUI = CheetoUI.openMenu('Cheeto Menu', 'Subtitle!', true, { enableGlare: true }, (cb: Callback) => {
+        cb(valuetest);
+    });
+}, false)
