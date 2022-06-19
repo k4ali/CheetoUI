@@ -9,6 +9,12 @@ type Position = {
 interface ISoundArray { [index: string]: [string, string, boolean] };
 interface IMenuControls { [index: string]: number };
 
+interface ICustomHeader
+{
+    dict: string;
+    texture: string;
+}
+
 interface IMenuButtons
 {
     text: string;
@@ -24,7 +30,9 @@ interface IMenuOptions
     enableHeader?: boolean;
     enableGlare?: boolean;
     enablePageCounter?: boolean;
+
     headerColor?: Color;
+    customHeader?: ICustomHeader;
 }
 
 interface ICheetoUI
@@ -154,7 +162,7 @@ class CheetoUI
         description: {
             miniBar: {
                 height: 0.002,
-                alpha: 220,
+                alpha: 210,
             },
 
             height: 0.025,
@@ -185,6 +193,7 @@ class CheetoUI
 
         if (GlobalConfig.enableSounds) PushSound('open');
         RequestStreamedTextureDict(GlobalConfig.texturesDict, true);
+        if (instance.menu.options?.customHeader! !== undefined) RequestStreamedTextureDict(instance.menu.options?.customHeader?.dict!, true);
 
         this.menuTick = setTick(() => {
             if (!this.isMenuOpened) clearTick(this.menuTick);
@@ -335,11 +344,17 @@ class CheetoUI
     private drawHeader(): void
     {
         const GlobalConfig = CheetoUI.MenuConfig;
+        const customHeader: [boolean, ICustomHeader] = [
+            (this.menu.options?.customHeader !== undefined ?? false),
+            this.menu.options?.customHeader! ?? {}
+        ];
+
         let headerColor = (this.menu.options?.headerColor ?? GlobalConfig.header.color);
 
-        DrawRect(GlobalConfig.structPosition.x, GlobalConfig.structPosition.y, GlobalConfig.globalWidth, GlobalConfig.header.height, headerColor[0], headerColor[1], headerColor[2], headerColor[3]);
+        if (!customHeader[0]) DrawRect(GlobalConfig.structPosition.x, GlobalConfig.structPosition.y, GlobalConfig.globalWidth, GlobalConfig.header.height, headerColor[0], headerColor[1], headerColor[2], headerColor[3]);
+        else DrawSprite(customHeader[1].dict, customHeader[1].texture, GlobalConfig.structPosition.x, GlobalConfig.structPosition.y, GlobalConfig.globalWidth, GlobalConfig.header.height, 0.0, 255, 255, 255, headerColor[3]);
+        
         if (this.menu.title.length > 0) this.drawTitle();
-
         if (this.menu.options?.enableGlare)
         {
             if (!this.isGlareLoaded)
