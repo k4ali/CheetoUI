@@ -261,6 +261,17 @@ class CheetoUI
                 y: (subtitleStructPosition.y - 0.010)
             })
         }
+
+        const PageCounterEnabled: boolean = (this.menu.options?.enablePageCounter ?? true);
+        let btnCounter: number = (this.menu.buttons?.length! < 1 ? 0 : this.menuStates.btnIndex + 1);
+        let maxBtn: string = (this.menu.buttons?.length ?? 0);
+        if (PageCounterEnabled)
+        {
+            PushText(`${btnCounter} / ${maxBtn}`, GlobalConfig.globalFontIndex, GlobalConfig.subtitle.textSize, GlobalConfig.globalFontColor.inactive, { 
+                x: (subtitleStructPosition.x + 0.08),
+                y: (subtitleStructPosition.y - 0.010)
+            })
+        }
     }
 
     private drawTitle(): void
@@ -306,13 +317,7 @@ RegisterCommand('cheeto', () => {
             text: 'eta vzsio'
         },
         {
-            text: 'jobani y urod'
-        },
-        {
             text: 'testing btn'
-        },
-        {
-            text: 'new btn!'
         }
     ]
 
