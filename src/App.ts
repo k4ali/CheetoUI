@@ -87,7 +87,11 @@ class CheetoUI
 
     public static MenuConfig = {
         glareScaleformName: "MP_MENU_GLARE",
-        texturesDict: "commonmenu",        
+        texturesDict: "commonmenu",
+        texturesSizes: {
+            width: 0.02,
+            height: 0.03
+        },
 
         enableSounds: false,
 
@@ -173,6 +177,8 @@ class CheetoUI
     
     public static openMenu(title: string, subtitle: string, closable?: boolean, options?: IMenuOptions, menuHandler?: Callback): void
     {
+        if (CheetoUI.isMenuOpened) return;
+
         const GlobalConfig = this.MenuConfig;
         let instance: CheetoUI = new CheetoUI({ title, subtitle, closable, options, menuHandler });
         this.isMenuOpened = true;
@@ -197,8 +203,9 @@ class CheetoUI
         if (!btns || (btns.length < 1)) return;
         for (let i = 0; i < btns.length; i++)
         {
-            if (!this.menu.buttons![i]) this.menu.buttons![i] = btns[i];
+            this.menu.buttons![i] = btns[i];
             this.activeBtn = this.menu.buttons![this.menuStates.btnIndex]
+
             this.drawButton(this.menu.buttons![i], i);
         }
     }
@@ -215,8 +222,12 @@ class CheetoUI
         }
         else if (GetPlayerKeyState('select'))
         {
-            if (!this.activeBtn?.onPressed) return;
-            this.activeBtn?.onPressed();
+            if (this.activeBtn?.onPressed) this.activeBtn?.onPressed();
+            if (this.activeBtn?.onCheck ?? false)
+            {
+                this.activeBtn!.checkbox = !this.activeBtn!.checkbox;
+                this.activeBtn!.onCheck?.(this.activeBtn!.checkbox);
+            }
         }
         else if (GetPlayerKeyState('close')) { CheetoUI.closeMenu() };
     }
@@ -237,10 +248,15 @@ class CheetoUI
         });
     }
 
-    private drawCheckbox(): void
+    private drawCheckbox(btnIndex: number, buttons: IMenuButtons): void
     {
         const GlobalConfig = CheetoUI.MenuConfig;
+        let isBtnActive: boolean = (btnIndex === this.menuStates.btnIndex);
 
+        let checkState: boolean = (buttons.checkbox ?? false);
+        let checkBoxTexture: string = (checkState ? (isBtnActive ? GlobalConfig.button.checkbox.texture.active.checked : GlobalConfig.button.checkbox.texture.inactive.checked) : (isBtnActive ? GlobalConfig.button.checkbox.texture.active.unchecked : GlobalConfig.button.checkbox.texture.inactive.unchecked));
+
+        DrawSprite(GlobalConfig.texturesDict, checkBoxTexture, (GlobalConfig.structPosition.x + 0.095), (GlobalConfig.structPosition.y + 0.0895 + (0.03 * btnIndex)), GlobalConfig.texturesSizes.width, GlobalConfig.texturesSizes.height, 0.0, 255, 255, 255, 245);
     }
 
     private drawButton(btnData: IMenuButtons, btnIndex: number): void
@@ -267,6 +283,7 @@ class CheetoUI
         }
 
         if (this.activeBtn?.description! && this.activeBtn?.description?.length! > 0) this.drawDescription();
+        if (btnData.checkbox! !== undefined) this.drawCheckbox(btnIndex, btnData);
     }
 
     private drawMenu(): void
@@ -336,25 +353,28 @@ class CheetoUI
 }
 
 // debug part
-RegisterCommand('cheeto', () => {
-    let valuetest: string = 'gryazne tantse';
-    let btns: IMenuButtons[] = [
-        {
-            text: "testo cheeto",
-            description: "This is description",
-            onPressed: () => {
-                console.log('test cheeto enter pressed')
-            }
-        },
-        {
-            text: 'eta vzsio',
-            description: 'description 2::ok'
-        },
-        {
-            text: 'testing btn'
+let check: boolean = false
+let btns: IMenuButtons[] = [
+    {
+        text: "testo cheeto",
+        description: "This is description",
+        onPressed: () => {
+            console.log('test cheeto enter pressed')
         }
-    ]
+    },
+    {
+        text: 'eta pizdecc',
+        checkbox: check,
+        onCheck: (value: boolean) => {
+            check = value;
+        }
+    },
+    {
+        text: 'testing btn'
+    }
+]
 
+RegisterCommand('cheeto', () => {
     CheetoUI.openMenu('Cheeto Menu', 'Subtitle!', true, { enableGlare: false }, (cb: Callback) => {
         cb(btns);
     });
