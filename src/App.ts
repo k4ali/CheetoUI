@@ -12,6 +12,7 @@ interface IMenuControls { [index: string]: number };
 interface IMenuButtons
 {
     text: string;
+    description?: string;
     onPressed?: Callback;
 }
 
@@ -68,6 +69,7 @@ class CheetoUI
 
     private isGlareLoaded: boolean = false;
     private glareHandle: any;
+    private activeBtn: (IMenuButtons | undefined);
 
     public static defaultStates: IMenuStates = {
         btnIndex: 0,
@@ -116,13 +118,24 @@ class CheetoUI
 
         button: {
             textSize: 0.265,
+
             rect: {
                 height: 0.0295,
                 color: {
-                    inactive: [26, 26, 26, 200],
+                    inactive: [26, 26, 26, 195],
                     active: [250, 250, 250, 245]
                 }
             }
+        },
+
+        description: {
+            miniBar: {
+                height: 0.002,
+                alpha: 220,
+            },
+
+            height: 0.025,
+            alpha: 250
         }
     };
 
@@ -162,7 +175,8 @@ class CheetoUI
         for (let i = 0; i < btns.length; i++)
         {
             if (!this.menu.buttons![i]) this.menu.buttons![i] = btns[i];
-            this.drawButton({ text: this.menu.buttons![i].text }, i);
+            this.activeBtn = this.menu.buttons![this.menuStates.btnIndex]
+            this.drawButton(this.menu.buttons![i], i);
         }
     }
 
@@ -178,20 +192,29 @@ class CheetoUI
         }
         else if (GetPlayerKeyState('select'))
         {
-            const selectedBtn: IMenuButtons = this.menu.buttons![this.menuStates.btnIndex];
-            if (!selectedBtn.onPressed) return;
-            selectedBtn.onPressed();
+            if (!this.activeBtn?.onPressed) return;
+            this.activeBtn?.onPressed();
         }
-        else if (GetPlayerKeyState('close'))
-        {
-            CheetoUI.closeMenu();
-        }
+        else if (GetPlayerKeyState('close')) { CheetoUI.closeMenu() };
+    }
+
+    private drawDescription(): void
+    {
+        const GlobalConfig = CheetoUI.MenuConfig;
+        const descriptionColor: (Color | number[]) = (this.menu.options?.headerColor ? this.menu.options?.headerColor : GlobalConfig.header.color);
+
+        let miniBarPosition: Position['y'] = (GlobalConfig.structPosition.y + 0.0895 + (0.03 * (this.menu.buttons?.length! - 1)) + 0.0165);
+        let descriptionBarPosition: Position['y'] = (miniBarPosition + ((GlobalConfig.description.height / 2) + (GlobalConfig.description.miniBar.height / 2)));
+
+        DrawRect(GlobalConfig.structPosition.x, miniBarPosition, GlobalConfig.globalWidth, GlobalConfig.description.miniBar.height, descriptionColor[0], descriptionColor[1], descriptionColor[2], GlobalConfig.description.miniBar.alpha);
+        DrawRect(GlobalConfig.structPosition.x, descriptionBarPosition, GlobalConfig.globalWidth, GlobalConfig.description.height, GlobalConfig.subtitle.rect.color[0], GlobalConfig.subtitle.rect.color[1], GlobalConfig.subtitle.rect.color[2], GlobalConfig.description.alpha);
     }
 
     private drawButton(btnData: IMenuButtons, btnIndex: number): void
     {
         const GlobalConfig = CheetoUI.MenuConfig;
         let isBtnActive: boolean = (btnIndex === this.menuStates.btnIndex);
+        
         let btnColor: number[] = (isBtnActive ? GlobalConfig.button.rect.color.active : GlobalConfig.button.rect.color.inactive);
         let btnStructPosition: Position = {
             x: GlobalConfig.structPosition.x,
@@ -209,6 +232,8 @@ class CheetoUI
                 y: (btnStructPosition.y - 0.0115)
             })
         }
+
+        if (this.activeBtn!.description && this.activeBtn!.description?.length > 0) this.drawDescription();
     }
 
     private drawMenu(): void
@@ -272,6 +297,7 @@ RegisterCommand('cheeto', () => {
     let btns: IMenuButtons[] = [
         {
             text: "testo cheeto",
+            description: "This is description",
             onPressed: () => {
                 console.log('test cheeto enter pressed')
             }
@@ -283,7 +309,10 @@ RegisterCommand('cheeto', () => {
             text: 'jobani y urod'
         },
         {
-            text: 'pidaras'
+            text: 'testing btn'
+        },
+        {
+            text: 'new btn!'
         }
     ]
 
