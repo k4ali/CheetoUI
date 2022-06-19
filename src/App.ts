@@ -135,7 +135,9 @@ class CheetoUI
             },
 
             height: 0.025,
-            alpha: 250
+            alpha: 245,
+            textSize: 0.22,
+            textColor: [235, 235, 235, 140]
         }
     };
 
@@ -208,6 +210,10 @@ class CheetoUI
 
         DrawRect(GlobalConfig.structPosition.x, miniBarPosition, GlobalConfig.globalWidth, GlobalConfig.description.miniBar.height, descriptionColor[0], descriptionColor[1], descriptionColor[2], GlobalConfig.description.miniBar.alpha);
         DrawRect(GlobalConfig.structPosition.x, descriptionBarPosition, GlobalConfig.globalWidth, GlobalConfig.description.height, GlobalConfig.subtitle.rect.color[0], GlobalConfig.subtitle.rect.color[1], GlobalConfig.subtitle.rect.color[2], GlobalConfig.description.alpha);
+        PushText(this.activeBtn?.description!, GlobalConfig.globalFontIndex, GlobalConfig.description.textSize, GlobalConfig.description.textColor, {
+            x: (GlobalConfig.structPosition.x - 0.1),
+            y: (descriptionBarPosition - 0.010)
+        })
     }
 
     private drawButton(btnData: IMenuButtons, btnIndex: number): void
@@ -264,7 +270,7 @@ class CheetoUI
 
         const PageCounterEnabled: boolean = (this.menu.options?.enablePageCounter ?? true);
         let btnCounter: number = (this.menu.buttons?.length! < 1 ? 0 : this.menuStates.btnIndex + 1);
-        let maxBtn: string = (this.menu.buttons?.length ?? 0);
+        let maxBtn: number = (this.menu.buttons?.length ?? 0);
         if (PageCounterEnabled)
         {
             PushText(`${btnCounter} / ${maxBtn}`, GlobalConfig.globalFontIndex, GlobalConfig.subtitle.textSize, GlobalConfig.globalFontColor.inactive, { 
@@ -314,7 +320,8 @@ RegisterCommand('cheeto', () => {
             }
         },
         {
-            text: 'eta vzsio'
+            text: 'eta vzsio',
+            description: 'description 2::ok'
         },
         {
             text: 'testing btn'
