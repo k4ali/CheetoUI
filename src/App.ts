@@ -14,6 +14,9 @@ interface IMenuButtons
     text: string;
     description?: string;
     onPressed?: Callback;
+
+    checkbox?: boolean;
+    onCheck?: Callback;
 }
 
 interface IMenuOptions
@@ -84,6 +87,8 @@ class CheetoUI
 
     public static MenuConfig = {
         glareScaleformName: "MP_MENU_GLARE",
+        texturesDict: "commonmenu",        
+
         enableSounds: false,
 
         globalFontIndex: 0,
@@ -125,6 +130,20 @@ class CheetoUI
                     inactive: [26, 26, 26, 195],
                     active: [250, 250, 250, 245]
                 }
+            },
+
+            checkbox: {
+                texture: {
+                    inactive: {
+                        unchecked: 'shop_box_blank',
+                        checked: 'shop_box_tick'
+                    },
+
+                    active: {
+                        unchecked: 'shop_box_blankb',
+                        checked: 'shop_box_tickb'
+                    }
+                }
             }
         },
 
@@ -159,6 +178,8 @@ class CheetoUI
         this.isMenuOpened = true;
 
         if (GlobalConfig.enableSounds) PushSound('open');
+        RequestStreamedTextureDict(GlobalConfig.texturesDict, true);
+
         this.menuTick = setTick(() => {
             if (!this.isMenuOpened) clearTick(this.menuTick);
 
@@ -207,13 +228,19 @@ class CheetoUI
 
         let miniBarPosition: Position['y'] = (GlobalConfig.structPosition.y + 0.0895 + (0.03 * (this.menu.buttons?.length! - 1)) + 0.0165);
         let descriptionBarPosition: Position['y'] = (miniBarPosition + ((GlobalConfig.description.height / 2) + (GlobalConfig.description.miniBar.height / 2)));
-
+        
         DrawRect(GlobalConfig.structPosition.x, miniBarPosition, GlobalConfig.globalWidth, GlobalConfig.description.miniBar.height, descriptionColor[0], descriptionColor[1], descriptionColor[2], GlobalConfig.description.miniBar.alpha);
         DrawRect(GlobalConfig.structPosition.x, descriptionBarPosition, GlobalConfig.globalWidth, GlobalConfig.description.height, GlobalConfig.subtitle.rect.color[0], GlobalConfig.subtitle.rect.color[1], GlobalConfig.subtitle.rect.color[2], GlobalConfig.description.alpha);
         PushText(this.activeBtn?.description!, GlobalConfig.globalFontIndex, GlobalConfig.description.textSize, GlobalConfig.description.textColor, {
             x: (GlobalConfig.structPosition.x - 0.1),
             y: (descriptionBarPosition - 0.010)
-        })
+        });
+    }
+
+    private drawCheckbox(): void
+    {
+        const GlobalConfig = CheetoUI.MenuConfig;
+
     }
 
     private drawButton(btnData: IMenuButtons, btnIndex: number): void
@@ -239,7 +266,7 @@ class CheetoUI
             })
         }
 
-        if (this.activeBtn!.description && this.activeBtn!.description?.length > 0) this.drawDescription();
+        if (this.activeBtn?.description! && this.activeBtn?.description?.length! > 0) this.drawDescription();
     }
 
     private drawMenu(): void
