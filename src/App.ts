@@ -23,6 +23,10 @@ interface IMenuButtons
 
     checkbox?: boolean;
     onCheck?: Callback;
+    
+    list?: string[];
+    listIndex?: number;
+    onListIndexChange?: Callback;
 }
 
 interface IMenuOptions
@@ -96,10 +100,6 @@ class CheetoUI
     public static MenuConfig = {
         glareScaleformName: "MP_MENU_GLARE",
         texturesDict: "commonmenu",
-        texturesSizes: {
-            width: 0.02,
-            height: 0.03
-        },
 
         enableSounds: false,
 
@@ -155,6 +155,28 @@ class CheetoUI
                         unchecked: 'shop_box_blankb',
                         checked: 'shop_box_tickb'
                     }
+                },
+                
+                size: {
+                    width: 0.02,
+                    height: 0.03
+                }
+            },
+
+            list: {
+                color: {
+                    active: [10, 10, 10, 245],
+                    inactive: [250, 250, 250, 245]
+                },
+
+                texture: {
+                    left: 'arrowleft',
+                    right: 'arrowright'
+                },
+
+                size: {
+                    width: 0.01,
+                    height: 0.02
                 }
             }
         },
@@ -180,9 +202,16 @@ class CheetoUI
         navigateUp: 300,
         navigateDown: 299,
         select: 215,
-        close: 202
+        close: 202,
+        clickLeft: 174,
+        clickRight: 175
     }
     
+    private getTextLength(text: string): number
+    {
+        return (text.toLowerCase().replace(' ', '').length);
+    }
+
     public static openMenu(title: string, subtitle: string, closable?: boolean, options?: IMenuOptions, menuHandler?: Callback): void
     {
         if (CheetoUI.isMenuOpened) return;
@@ -238,6 +267,32 @@ class CheetoUI
                 this.activeBtn!.onCheck?.(this.activeBtn!.checkbox);
             }
         }
+        else if (GetPlayerKeyState('clickRight'))
+        {
+            if (!this.activeBtn?.list) return;
+            let actualListIndex: number = (this.activeBtn?.listIndex ?? 0);
+            let listValueLength: number = ((this.activeBtn?.list?.length - 1) ?? 0);
+
+            if (actualListIndex < listValueLength)
+            {
+                this.activeBtn!.listIndex! = (this.activeBtn!.listIndex! + 1);
+            }
+            else this.activeBtn!.listIndex! = 0;
+            if (this.activeBtn?.onListIndexChange) this.activeBtn?.onListIndexChange(this.activeBtn!.listIndex!);
+        }
+        else if (GetPlayerKeyState('clickLeft'))
+        {
+            if (!this.activeBtn?.list) return;
+            let actualListIndex: number = (this.activeBtn?.listIndex ?? 0);
+            let listValueLength: number = ((this.activeBtn?.list?.length - 1) ?? 0);
+
+            if (actualListIndex === 0)
+            {
+                this.activeBtn!.listIndex! = listValueLength;
+            }
+            else this.activeBtn!.listIndex! = (this.activeBtn!.listIndex! - 1);
+            if (this.activeBtn?.onListIndexChange) this.activeBtn?.onListIndexChange(this.activeBtn!.listIndex!);
+        }
         else if (GetPlayerKeyState('close')) { CheetoUI.closeMenu() };
     }
 
@@ -265,7 +320,41 @@ class CheetoUI
         let checkState: boolean = (buttons.checkbox ?? false);
         let checkBoxTexture: string = (checkState ? (isBtnActive ? GlobalConfig.button.checkbox.texture.active.checked : GlobalConfig.button.checkbox.texture.inactive.checked) : (isBtnActive ? GlobalConfig.button.checkbox.texture.active.unchecked : GlobalConfig.button.checkbox.texture.inactive.unchecked));
 
-        DrawSprite(GlobalConfig.texturesDict, checkBoxTexture, (GlobalConfig.structPosition.x + 0.095), (GlobalConfig.structPosition.y + 0.0895 + (0.03 * btnIndex)), GlobalConfig.texturesSizes.width, GlobalConfig.texturesSizes.height, 0.0, 255, 255, 255, 245);
+        DrawSprite(GlobalConfig.texturesDict, checkBoxTexture, (GlobalConfig.structPosition.x + 0.095), (GlobalConfig.structPosition.y + 0.0895 + (0.03 * btnIndex)), GlobalConfig.button.checkbox.size.width, GlobalConfig.button.checkbox.size.height, 0.0, 255, 255, 255, 245);
+    }
+
+    private drawList(btnIndex: number, button: IMenuButtons): void
+    {
+        const GlobalConfig = CheetoUI.MenuConfig;
+        let isBtnActive: boolean = (btnIndex === this.menuStates.btnIndex);
+
+        let textureColor: (Color | number[]) = (isBtnActive ? GlobalConfig.button.list.color.active : GlobalConfig.button.list.color.inactive);
+        let btnTextColor: number[] = (isBtnActive ? GlobalConfig.globalFontColor.active : GlobalConfig.globalFontColor.inactive);
+
+        const rightArrowPosition: { x: number, y: number } = {
+            x: GlobalConfig.structPosition.x + 0.098,
+            y: (GlobalConfig.structPosition.y + 0.0895 + (0.03 * btnIndex))
+        };
+
+        DrawSprite(GlobalConfig.texturesDict, GlobalConfig.button.list.texture.right, rightArrowPosition.x, rightArrowPosition.y, GlobalConfig.button.list.size.width, GlobalConfig.button.list.size.height, 0.0, textureColor[0], textureColor[1], textureColor[2], textureColor[3]);
+        
+        let listIndexValue: (string | undefined) = (button.list![button.listIndex ?? 0] ?? '');
+        let textLength: number = this.getTextLength(listIndexValue);
+        if (listIndexValue.length > 0)
+        {
+            let textPosition: Position['x'] = (rightArrowPosition.x - ((GlobalConfig.button.list.size.width * (Math.floor(textLength) / 2)) + (0.0025 * 2.55)))
+            PushText(listIndexValue, GlobalConfig.globalFontIndex, (GlobalConfig.button.textSize - 0.015), btnTextColor, {
+                x: textPosition,
+                y: (rightArrowPosition.y - 0.0109)
+            })
+        }
+
+        let leftArrowPosition: { x: number, y: number } = {
+            x: (rightArrowPosition.x - ((GlobalConfig.button.list.size.width * (Math.floor(textLength) / 2)) + (0.0050 * 2.5))),
+            y: rightArrowPosition.y
+        }
+
+        DrawSprite(GlobalConfig.texturesDict, GlobalConfig.button.list.texture.left, leftArrowPosition.x, leftArrowPosition.y, GlobalConfig.button.list.size.width, GlobalConfig.button.list.size.height, 0.0, textureColor[0], textureColor[1], textureColor[2], textureColor[3]);
     }
 
     private drawButton(btnData: IMenuButtons, btnIndex: number): void
@@ -293,6 +382,7 @@ class CheetoUI
 
         if (this.activeBtn?.description! && this.activeBtn?.description?.length! > 0) this.drawDescription();
         if (btnData.checkbox! !== undefined) this.drawCheckbox(btnIndex, btnData);
+        if (btnData.list! !== undefined) this.drawList(btnIndex, btnData);
     }
 
     private drawMenu(): void
@@ -369,6 +459,7 @@ class CheetoUI
 
 // debug part
 let check: boolean = false
+let indexStorage: number = 0;
 let btns: IMenuButtons[] = [
     {
         text: "testo cheeto",
@@ -378,10 +469,12 @@ let btns: IMenuButtons[] = [
         }
     },
     {
-        text: 'eta pizdecc',
-        checkbox: check,
-        onCheck: (value: boolean) => {
-            check = value;
+        text: 'second button ok!',
+        list: ['Test', 'damn', 'yooo'],
+        listIndex: indexStorage,
+        onListIndexChange: (Index: number) => {
+            console.log(Index)
+            indexStorage = Index;
         }
     },
     {
