@@ -212,9 +212,9 @@ class CheetoUI
         return (text.toLowerCase().replace(' ', '').length);
     }
 
-    public static openMenu(title: string, subtitle: string, closable?: boolean, options?: IMenuOptions, menuHandler?: Callback): void
+    public static createMenu(title: string, subtitle: string, closable?: boolean, options?: IMenuOptions, menuHandler?: Callback): (CheetoUI | undefined)
     {
-        if (CheetoUI.isMenuOpened) return;
+        if (this.isMenuOpened) return;
 
         const GlobalConfig = this.MenuConfig;
         let instance: CheetoUI = new CheetoUI({ title, subtitle, closable, options, menuHandler });
@@ -232,6 +232,8 @@ class CheetoUI
                 if (btnsData) instance.refreshMenu(btnsData);
             })
         })
+
+        return instance;
     }
 
     public static closeMenu(): void { this.isMenuOpened = false };
@@ -483,7 +485,7 @@ let btns: IMenuButtons[] = [
 ]
 
 RegisterCommand('cheeto', () => {
-    CheetoUI.openMenu('Cheeto Menu', 'Subtitle!', true, { enableGlare: false }, (cb: Callback) => {
+    CheetoUI.createMenu('Cheeto Menu', 'Subtitle!', true, { enableGlare: false }, (cb: Callback) => {
         cb(btns);
     });
 }, false)
